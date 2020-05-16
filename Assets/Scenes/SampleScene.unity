@@ -158,8 +158,9 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 24a82e49ed316bf4bbb90daaf5cf5ccb, type: 3}
   - {fileID: 2800000, guid: cd93cd80d61344b4fb424f299675a026, type: 3}
   - {fileID: 2800000, guid: 5ca605c38c0fdf84c86f61f0fabf7d5d, type: 3}
-  columnHeight: 8
+  columnHeight: 2
   chunkSize: 16
+  worldSize: 5
 --- !u!4 &568262561
 Transform:
   m_ObjectHideFlags: 0

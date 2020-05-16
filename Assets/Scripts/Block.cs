@@ -2,10 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Block : MonoBehaviour
+public class Block
 {
-    public Material material;
     enum BlockSide { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM };
+    public enum BlockType { DIRT, AIR, WATER };
+
+    BlockType blockType;
+    bool isTransparent;
+    GameObject blockParent;
+    Vector3 blockPosition;
+    Material blockMaterial;
+
     Vector3[] vertices = new Vector3[8] { new Vector3(-0.5f, -0.5f,  0.5f),
                                           new Vector3( 0.5f, -0.5f,  0.5f),
                                           new Vector3( 0.5f, -0.5f, -0.5f),
@@ -19,20 +26,73 @@ public class Block : MonoBehaviour
                                     new Vector2(0f, 1f),
                                     new Vector2(1f, 1f) };
 
-    private void Start()
+    public Block(BlockType blockType, GameObject blockParent,
+        Vector3 blockPosition, Material blockMaterial)
     {
-        CreateBlock();
-        CombineSides();
+        this.blockType = blockType;
+        this.blockParent = blockParent;
+        this.blockPosition = blockPosition;
+        this.blockMaterial = blockMaterial;
+
+        if (blockType == BlockType.AIR ||
+            blockType == BlockType.WATER)
+            isTransparent = true;
+        else
+            isTransparent = false;
     }
 
-    void CreateBlock()
+    public void CreateBlock()
     {
-        CreateBlockSide(BlockSide.FRONT);
-        CreateBlockSide(BlockSide.BACK);
-        CreateBlockSide(BlockSide.LEFT);
-        CreateBlockSide(BlockSide.RIGHT);
-        CreateBlockSide(BlockSide.TOP);
-        CreateBlockSide(BlockSide.BOTTOM);
+        if (blockType == BlockType.AIR)
+            return;
+
+        if (HasTransparentNeighbour(BlockSide.FRONT))
+            CreateBlockSide(BlockSide.FRONT);
+
+        if (HasTransparentNeighbour(BlockSide.BACK))
+            CreateBlockSide(BlockSide.BACK);
+
+        if (HasTransparentNeighbour(BlockSide.LEFT))
+            CreateBlockSide(BlockSide.LEFT);
+
+        if (HasTransparentNeighbour(BlockSide.RIGHT))
+            CreateBlockSide(BlockSide.RIGHT);
+
+        if (HasTransparentNeighbour(BlockSide.TOP))
+            CreateBlockSide(BlockSide.TOP);
+
+        if (HasTransparentNeighbour(BlockSide.BOTTOM))
+            CreateBlockSide(BlockSide.BOTTOM);
+    }
+
+    bool HasTransparentNeighbour(BlockSide blockSide)
+    {
+        {
+            Block[,,] chunkBlocks = blockParent.GetComponent<Chunk>().chunkBlocks;
+            Vector3 neighbourPosition = new Vector3(0, 0, 0);
+
+            if (blockSide == BlockSide.FRONT)
+                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z + 1);
+            else if (blockSide == BlockSide.BACK)
+                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z - 1);
+            else if (blockSide == BlockSide.TOP)
+                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
+            else if (blockSide == BlockSide.BOTTOM)
+                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y - 1, blockPosition.z);
+            else if (blockSide == BlockSide.RIGHT)
+                neighbourPosition = new Vector3(blockPosition.x + 1, blockPosition.y, blockPosition.z);
+            else if (blockSide == BlockSide.LEFT)
+                neighbourPosition = new Vector3(blockPosition.x - 1, blockPosition.y, blockPosition.z);
+
+            if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkBlocks.GetLength(0) &&
+                neighbourPosition.y >= 0 && neighbourPosition.y < chunkBlocks.GetLength(1) &&
+                neighbourPosition.z >= 0 && neighbourPosition.z < chunkBlocks.GetLength(2))
+            {
+                return chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
+            }
+
+            return true;
+        }
     }
 
     void CreateBlockSide(BlockSide side)
@@ -41,7 +101,8 @@ public class Block : MonoBehaviour
         mesh = GenerateBlockSide(mesh, side);
 
         GameObject blockSide = new GameObject("block side");
-        blockSide.transform.parent = this.gameObject.transform;
+        blockSide.transform.position = blockPosition;
+        blockSide.transform.parent = blockParent.transform;
 
         MeshFilter meshFilter = blockSide.AddComponent(typeof(MeshFilter)) as MeshFilter;
         meshFilter.mesh = mesh;
@@ -102,31 +163,5 @@ public class Block : MonoBehaviour
         }
 
         return mesh;
-    }
-
-    void CombineSides()
-    {
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combineSides = new CombineInstance[meshFilters.Length];
-
-        int index = 0;
-        foreach (MeshFilter meshFilter in meshFilters)
-        {
-            combineSides[index].mesh = meshFilter.sharedMesh;
-            combineSides[index].transform = meshFilter.transform.localToWorldMatrix;
-            index++;
-        }
-
-        MeshFilter blockMeshFilter = this.gameObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
-        blockMeshFilter.mesh = new Mesh();
-        blockMeshFilter.mesh.CombineMeshes(combineSides);
-
-        MeshRenderer blockMeshRenderer = this.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-        blockMeshRenderer.material = material;
-
-        foreach (Transform side in this.transform)
-        {
-            Destroy(side.gameObject);
-        }
     }
 }

@@ -4,13 +4,20 @@ using UnityEngine;
 
 public class ChunkUtils : MonoBehaviour
 {
-    static int offset = 0;
-    static int maxHeight = 16;
-    static float increment = 0.035f;
+    static int firstLayerOffset = 0;
+    static int secondLayerOffset = 0;
+    static int maxHeight = 32;
+    static float increment = 0.02f;
 
-    public static float GenerateHeight(float x, float z)
+    public static float Generate1stLayerHeight(float x, float z)
     {
-        float height = Map(1, maxHeight, 0, 1, PerlinNoise(x * increment + offset, z * increment + offset));
+        float height = Map(1, maxHeight, 0, 1, PerlinNoise(x * increment + firstLayerOffset, z * increment + firstLayerOffset));
+        return height;
+    }
+
+    public static float Generate2ndLayerHeight(float x, float z, int maxHeight)
+    {
+        float height = Map(1, maxHeight, 0, 1, PerlinNoise(x * increment * 5 + secondLayerOffset, z * increment * 5 + secondLayerOffset));
         return height;
     }
 
@@ -31,9 +38,10 @@ public class ChunkUtils : MonoBehaviour
         return height;
     }
 
-    public static int GenerateRandomOffset()
+    public static void GenerateRandomOffset()
     {
-        offset = Random.Range(0, 1000);
-        return offset;
+        firstLayerOffset = Random.Range(0, 1000);
+        secondLayerOffset = Random.Range(0, 1000);
+
     }
 }

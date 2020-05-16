@@ -21,7 +21,7 @@ public class World : MonoBehaviour
         Material material = new Material(Shader.Find("Standard"));
         material.mainTexture = atlas;
         blockMaterial = material;
-        offset = ChunkUtils.GenerateRandomOffset();
+        ChunkUtils.GenerateRandomOffset();
         GenerateBlockTypes();
         GenerateWorld();
         StartCoroutine(BuildWorld());
@@ -72,17 +72,17 @@ public class World : MonoBehaviour
         brick.GenerateBlockUVs();
         blockTypes.Add(brick);
 
-        BlockType stone = new BlockType("stone", false, true);
-        stone.sideUV = SetBlockTypeUV("stone");
-        stone.GenerateBlockUVs();
-        blockTypes.Add(stone);
-
         BlockType grass = new BlockType("grass", false, false);
         grass.topUV = SetBlockTypeUV("grass");
         grass.sideUV = SetBlockTypeUV("grass_side");
         grass.bottomUV = SetBlockTypeUV("dirt");
         grass.GenerateBlockUVs();
         blockTypes.Add(grass);
+
+        BlockType stone = new BlockType("stone", false, true);
+        stone.sideUV = SetBlockTypeUV("stone");
+        stone.GenerateBlockUVs();
+        blockTypes.Add(stone);
     }
 
     Vector2[] SetBlockTypeUV(string name)

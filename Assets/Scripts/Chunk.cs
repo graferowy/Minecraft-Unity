@@ -26,7 +26,7 @@ public class Chunk
             {
                 for (int x = 0; x < chunkSize; x++)
                 {
-                    chunkBlocks[x, y, z] = new Block((Block.BlockType)Random.Range(0, 4), this,
+                    chunkBlocks[x, y, z] = new Block(World.blockTypes[Random.Range(0, 5)], this,
                         new Vector3(x, y, z), World.atlasDictionary);
                 }
             }

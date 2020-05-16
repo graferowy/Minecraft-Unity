@@ -5,13 +5,13 @@ using UnityEngine;
 public class Block
 {
     enum BlockSide { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM };
-    public enum BlockType { DIRT, AIR, WATER };
+    public enum BlockType { DIRT, AIR, BRICK, GRASS, STONE };
 
     BlockType blockType;
     bool isTransparent;
     GameObject blockParent;
     Vector3 blockPosition;
-    Material blockMaterial;
+    Dictionary<string, Rect> blockUVCoordinates;
 
     Vector3[] vertices = new Vector3[8] { new Vector3(-0.5f, -0.5f,  0.5f),
                                           new Vector3( 0.5f, -0.5f,  0.5f),
@@ -27,15 +27,14 @@ public class Block
                                     new Vector2(1f, 1f) };
 
     public Block(BlockType blockType, GameObject blockParent,
-        Vector3 blockPosition, Material blockMaterial)
+        Vector3 blockPosition, Dictionary<string, Rect> blockUVCoordinates)
     {
         this.blockType = blockType;
         this.blockParent = blockParent;
         this.blockPosition = blockPosition;
-        this.blockMaterial = blockMaterial;
+        this.blockUVCoordinates = blockUVCoordinates;
 
-        if (blockType == BlockType.AIR ||
-            blockType == BlockType.WATER)
+        if (blockType == BlockType.AIR)
             isTransparent = true;
         else
             isTransparent = false;
@@ -97,8 +96,10 @@ public class Block
 
     void CreateBlockSide(BlockSide side)
     {
+        Vector2[] uvs = GetBlockSideUVs(side);
+
         Mesh mesh = new Mesh();
-        mesh = GenerateBlockSide(mesh, side);
+        mesh = GenerateBlockSide(mesh, side, uvs);
 
         GameObject blockSide = new GameObject("block side");
         blockSide.transform.position = blockPosition;
@@ -108,7 +109,73 @@ public class Block
         meshFilter.mesh = mesh;
     }
 
-    Mesh GenerateBlockSide(Mesh mesh, BlockSide side)
+    Vector2[] GetBlockSideUVs(BlockSide side)
+    {
+        Vector2[] uvs;
+
+        if (blockType == BlockType.AIR)
+        {
+            uvs = new Vector2[4] { new Vector2(0f, 0f),
+                                    new Vector2(1f, 0f),
+                                    new Vector2(0f, 1f),
+                                    new Vector2(1f, 1f) };
+        }
+        else if (blockType == BlockType.GRASS && side == BlockSide.BOTTOM)
+        {
+            uvs = new Vector2[4]
+            {
+                new Vector2(blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].x,
+                            blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].y),
+
+                new Vector2(blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].x + blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].width,
+                            blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].y),
+
+                new Vector2(blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].x,
+                            blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].y + blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].height),
+
+                new Vector2(blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].x + blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].width,
+                            blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].y + blockUVCoordinates[BlockType.DIRT.ToString().ToLower()].height)
+            };
+        }
+        else if (blockType == BlockType.GRASS && side != BlockSide.TOP)
+        {
+            uvs = new Vector2[4]
+            {
+                new Vector2(blockUVCoordinates["grass_side"].x,
+                            blockUVCoordinates["grass_side"].y),
+
+                new Vector2(blockUVCoordinates["grass_side"].x + blockUVCoordinates["grass_side"].width,
+                            blockUVCoordinates["grass_side"].y),
+
+                new Vector2(blockUVCoordinates["grass_side"].x,
+                            blockUVCoordinates["grass_side"].y + blockUVCoordinates["grass_side"].height),
+
+                new Vector2(blockUVCoordinates["grass_side"].x + blockUVCoordinates["grass_side"].width,
+                            blockUVCoordinates["grass_side"].y + blockUVCoordinates["grass_side"].height)
+            };
+        }
+        else
+        {
+            uvs = new Vector2[4]
+            {
+                new Vector2(blockUVCoordinates[blockType.ToString().ToLower()].x,
+                            blockUVCoordinates[blockType.ToString().ToLower()].y),
+
+                new Vector2(blockUVCoordinates[blockType.ToString().ToLower()].x + blockUVCoordinates[blockType.ToString().ToLower()].width,
+                            blockUVCoordinates[blockType.ToString().ToLower()].y),
+
+                new Vector2(blockUVCoordinates[blockType.ToString().ToLower()].x,
+                            blockUVCoordinates[blockType.ToString().ToLower()].y + blockUVCoordinates[blockType.ToString().ToLower()].height),
+
+                new Vector2(blockUVCoordinates[blockType.ToString().ToLower()].x + blockUVCoordinates[blockType.ToString().ToLower()].width,
+                            blockUVCoordinates[blockType.ToString().ToLower()].y + blockUVCoordinates[blockType.ToString().ToLower()].height)
+            };
+        }
+
+        return uvs;
+    }
+
+    Mesh GenerateBlockSide(Mesh mesh, BlockSide side, Vector2[] uv)
     {
         switch (side)
         {

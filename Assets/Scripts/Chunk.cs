@@ -4,12 +4,34 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
-    public Material blockMaterial;
+    public Texture2D[] atlasTextures;
     public Block[,,] chunkBlocks;
+
+    Dictionary<string, Rect> atlasDictionary = new Dictionary<string, Rect>();
+
+    Material blockMaterial;
 
     private void Start()
     {
+        Texture2D atlas = GetTextureAtlas();
+        Material material = new Material(Shader.Find("Standard"));
+        material.mainTexture = atlas;
+        blockMaterial = material;
         StartCoroutine(GenerateChunk(16));
+    }
+
+    Texture2D GetTextureAtlas()
+    {
+        Texture2D textureAtlas = new Texture2D(8192, 8192);
+        Rect[] rectCoordinates = textureAtlas.PackTextures(atlasTextures, 0, 8192, false);
+        textureAtlas.Apply();
+
+        for (int i = 0; i < rectCoordinates.Length; i++)
+        {
+            atlasDictionary.Add(atlasTextures[i].name.ToLower(), rectCoordinates[i]);
+        }
+
+        return textureAtlas;
     }
 
     IEnumerator GenerateChunk(int chunkSize)
@@ -22,8 +44,8 @@ public class Chunk : MonoBehaviour
             {
                 for (int x = 0; x < chunkSize; x++)
                 {
-                    chunkBlocks[x, y, z] = new Block(Block.BlockType.DIRT, this.gameObject,
-                        new Vector3(x, y, z), blockMaterial);
+                    chunkBlocks[x, y, z] = new Block((Block.BlockType)Random.Range(0, 5), this.gameObject,
+                        new Vector3(x, y, z), atlasDictionary);
                 }
             }
         }

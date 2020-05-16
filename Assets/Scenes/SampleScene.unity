@@ -152,7 +152,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2786be22505f30949a92c2af44fcae4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blockMaterial: {fileID: 2100000, guid: 4b2d93f7ffdbe22419343eb27bafda87, type: 2}
+  atlasTextures:
+  - {fileID: 2800000, guid: 5181ba0d7ef342d4095a1e5bfaaadf5b, type: 3}
+  - {fileID: 2800000, guid: d342a306b8c794749b5c2283e30d4b8f, type: 3}
+  - {fileID: 2800000, guid: 24a82e49ed316bf4bbb90daaf5cf5ccb, type: 3}
+  - {fileID: 2800000, guid: cd93cd80d61344b4fb424f299675a026, type: 3}
+  - {fileID: 2800000, guid: 5ca605c38c0fdf84c86f61f0fabf7d5d, type: 3}
 --- !u!4 &490084999
 Transform:
   m_ObjectHideFlags: 0

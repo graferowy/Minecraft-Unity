@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class World : MonoBehaviour
 {
@@ -9,11 +10,20 @@ public class World : MonoBehaviour
     public static Dictionary<string, Chunk> chunks = new Dictionary<string, Chunk>();
     public int columnHeight = 16;
     public int chunkSize = 16;
-    public int worldSize = 5;
-    int offset;
+    public int worldRadius = 2;
     Material blockMaterial;
 
+    GameObject player;
+    Vector2 lastPlayerPosition;
+    Vector2 currentPlayerPosition;
+
     public static List<BlockType> blockTypes = new List<BlockType>();
+
+    private void Awake()
+    {
+        player = GameObject.FindGameObjectWithTag("Player");
+        UpdatePlayerPosition();
+    }
 
     void Start()
     {
@@ -24,32 +34,77 @@ public class World : MonoBehaviour
         ChunkUtils.GenerateRandomOffset();
         GenerateBlockTypes();
         GenerateWorld();
-        StartCoroutine(BuildWorld());
+        StartCoroutine(BuildWorld(true));
     }
 
-    IEnumerator BuildWorld()
+    private void Update()
     {
-        foreach (KeyValuePair<string, Chunk> chunk in chunks)
+        UpdatePlayerPosition();
+
+        if (lastPlayerPosition != currentPlayerPosition)
         {
-            chunk.Value.DrawChunk(chunkSize);
+            lastPlayerPosition = currentPlayerPosition;
+            GenerateWorld();
+            StartCoroutine(BuildWorld());
+        }
+    }
+
+    IEnumerator BuildWorld(bool isFirst = false)
+    {
+        foreach (Chunk chunk in chunks.Values.ToList())
+        {
+            if (chunk.status == Chunk.chunkStatus.TO_DRAW)
+            {
+                chunk.DrawChunk(chunkSize);
+            }
 
             yield return null;
+        }
+
+        if (isFirst)
+        {
+            player.SetActive(true);
         }
     }
 
     void GenerateWorld()
     {
-        for (int z = 0; z < worldSize; z++)
+        for (int z = -worldRadius + (int)currentPlayerPosition.y - 1; z <= worldRadius + (int)currentPlayerPosition.y + 1; z++)
         {
-            for (int x = 0; x < worldSize; x++)
+            for (int x = -worldRadius + (int)currentPlayerPosition.x - 1; x <= worldRadius + (int)currentPlayerPosition.x + 1; x++)
             {
                 for (int y = 0; y < columnHeight; y++)
                 {
                     Vector3 chunkPosition = new Vector3(x * chunkSize, y * chunkSize, z * chunkSize);
                     string chunkName = GenerateChunkName(chunkPosition);
-                    Chunk chunk = new Chunk(chunkName, chunkPosition, blockMaterial);
-                    chunk.chunkObject.transform.parent = this.transform;
-                    chunks.Add(chunkName, chunk);
+                    Chunk chunk;
+
+                    if (z == -worldRadius + (int)currentPlayerPosition.y - 1 || z == worldRadius + (int)currentPlayerPosition.y + 1
+                        || x == -worldRadius + (int)currentPlayerPosition.x - 1 || x == worldRadius + (int)currentPlayerPosition.x + 1)
+                    {
+                        if (chunks.TryGetValue(chunkName, out chunk))
+                        {
+                            chunk.status = Chunk.chunkStatus.GENERATED;
+                            Destroy(chunk.chunkObject);
+                        }
+
+                        continue;
+                    }
+
+                    if (chunks.TryGetValue(chunkName, out chunk))
+                    {
+                        if (chunk.status == Chunk.chunkStatus.GENERATED)
+                        {
+                            chunk.RefreshChunk(chunkName, chunkPosition);
+                            chunk.chunkObject.transform.parent = this.transform;
+                        }
+                    }
+                    else
+                    {
+                        chunk = new Chunk(chunkName, chunkPosition, blockMaterial);
+                        chunk.chunkObject.transform.parent = this.transform;
+                        chunks.Add(chunkName, chunk);
+                    }
                 }
             }
         }
@@ -130,5 +185,11 @@ public class World : MonoBehaviour
         }
 
         return textureAtlas;
+    }
+
+    void UpdatePlayerPosition()
+    {
+        currentPlayerPosition.x = Mathf.Floor(player.transform.position.x / 16);
+        currentPlayerPosition.y = Mathf.Floor(player.transform.position.z / 16);
     }
 }

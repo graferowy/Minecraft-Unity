@@ -7,12 +7,15 @@ public class Chunk
     public Block[,,] chunkBlocks;
     public GameObject chunkObject;
     Material blockMaterial;
+    public enum chunkStatus { GENERATED, DRAWN, TO_DRAW };
+    public chunkStatus status;
 
     public Chunk(string name, Vector3 position, Material material)
     {
         this.chunkObject = new GameObject(name);
         this.chunkObject.transform.position = position;
         this.blockMaterial = material;
+        this.status = chunkStatus.GENERATED;
         GenerateChunk(16);
     }
 
@@ -33,18 +36,52 @@ public class Chunk
                     int generated2ndLayerY = (int)ChunkUtils.Generate2ndLayerHeight(worldX, worldZ, generated1stLayerY);
 
                     if (worldY == generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[3], this,
-                            new Vector3(x, y, z), World.atlasDictionary);
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[3], this, new Vector3(x, y, z));
                     else if (worldY < generated2ndLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[4], this,
-                            new Vector3(x, y, z), World.atlasDictionary);
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[4], this, new Vector3(x, y, z));
                     else if (worldY < generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[1], this,
-                            new Vector3(x, y, z), World.atlasDictionary);
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[1], this, new Vector3(x, y, z));
                     else
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[0], this,
-                            new Vector3(x, y, z), World.atlasDictionary);
+                    {
+                        this.status = chunkStatus.TO_DRAW;
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[0], this, new Vector3(x, y, z));
+                    }
                 }
+            }
+        }
+
+        if (status == chunkStatus.TO_DRAW)
+        {
+            string chunkName = (int)this.chunkObject.transform.position.x + "_" + ((int)this.chunkObject.transform.position.y - 16) + "_" + (int)this.chunkObject.transform.position.z;
+            Chunk chunkBelow;
+
+            if (World.chunks.TryGetValue(chunkName, out chunkBelow))
+            {
+                chunkBelow.status = chunkStatus.TO_DRAW;
+            }
+        }
+    }
+
+    public void RefreshChunk(string name, Vector3 position)
+    {
+        this.chunkObject = new GameObject(name);
+        this.chunkObject.transform.position = position;
+
+        foreach (Block block in chunkBlocks)
+        {
+            if (block.GetBlockType() == World.blockTypes[0])
+            {
+                this.status = chunkStatus.TO_DRAW;
+
+                string chunkName = (int)this.chunkObject.transform.position.x + "_" + ((int)this.chunkObject.transform.position.y - 16) + "_" + (int)this.chunkObject.transform.position.z;
+                Chunk chunkBelow;
+
+                if (World.chunks.TryGetValue(chunkName, out chunkBelow))
+                {
+                    chunkBelow.status = chunkStatus.TO_DRAW;
+                }
+
+                break;
             }
         }
     }
@@ -63,6 +100,8 @@ public class Chunk
         }
 
         CombineSides();
+
+        this.status = chunkStatus.DRAWN;
     }
 
     void CombineSides()
@@ -84,6 +123,8 @@ public class Chunk
 
         MeshRenderer blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
         blockMeshRenderer.material = blockMaterial;
+
+        chunkObject.AddComponent(typeof(MeshCollider));
 
         foreach (Transform side in chunkObject.transform)
         {

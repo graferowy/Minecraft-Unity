@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ChunkUtils : MonoBehaviour
+public static class ChunkUtils
 {
     static int firstLayerOffset = 0;
     static int secondLayerOffset = 0;
-    static int maxHeight = 32;
+    static int maxHeight = 64;
     static float increment = 0.02f;
 
     public static float Generate1stLayerHeight(float x, float z)

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Block
 {
@@ -10,11 +9,10 @@ public class Block
     BlockType blockType;
     bool isTransparent;
     Chunk chunkParent;
-    GameObject blockParent;
     Vector3 blockPosition;
-    Dictionary<string, Rect> blockUVCoordinates;
 
     static int[] triangles = new int[] { 3, 1, 0, 3, 2, 1 };
+
     static Vector3[] forwardVector = new Vector3[] { Vector3.forward, Vector3.forward,
                                                Vector3.forward, Vector3.forward};
     static Vector3[] backVector = new Vector3[] { Vector3.back, Vector3.back,
@@ -50,14 +48,11 @@ public class Block
     static Vector3[] bottomVertices = new Vector3[] { vertices[0], vertices[1],
                                                 vertices[2], vertices[3]};
 
-    public Block(BlockType blockType, Chunk chunkParent,
-        Vector3 blockPosition, Dictionary<string, Rect> blockUVCoordinates)
+    public Block(BlockType blockType, Chunk chunkParent, Vector3 blockPosition)
     {
         this.blockType = blockType;
         this.chunkParent = chunkParent;
-        this.blockParent = chunkParent.chunkObject;
         this.blockPosition = blockPosition;
-        this.blockUVCoordinates = blockUVCoordinates;
 
         if (blockType.isTransparent)
             isTransparent = true;
@@ -91,32 +86,30 @@ public class Block
 
     bool HasTransparentNeighbour(BlockSide blockSide)
     {
+        Block[,,] chunkBlocks = chunkParent.chunkBlocks;
+        Vector3 neighbourPosition = new Vector3(0, 0, 0);
+
+        if (blockSide == BlockSide.FRONT)
+            neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z + 1);
+        else if (blockSide == BlockSide.BACK)
+            neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z - 1);
+        else if (blockSide == BlockSide.TOP)
+            neighbourPosition = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
+        else if (blockSide == BlockSide.BOTTOM)
+            neighbourPosition = new Vector3(blockPosition.x, blockPosition.y - 1, blockPosition.z);
+        else if (blockSide == BlockSide.RIGHT)
+            neighbourPosition = new Vector3(blockPosition.x + 1, blockPosition.y, blockPosition.z);
+        else if (blockSide == BlockSide.LEFT)
+            neighbourPosition = new Vector3(blockPosition.x - 1, blockPosition.y, blockPosition.z);
+
+        if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkBlocks.GetLength(0) &&
+            neighbourPosition.y >= 0 && neighbourPosition.y < chunkBlocks.GetLength(1) &&
+            neighbourPosition.z >= 0 && neighbourPosition.z < chunkBlocks.GetLength(2))
         {
-            Block[,,] chunkBlocks = chunkParent.chunkBlocks;
-            Vector3 neighbourPosition = new Vector3(0, 0, 0);
-
-            if (blockSide == BlockSide.FRONT)
-                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z + 1);
-            else if (blockSide == BlockSide.BACK)
-                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y, blockPosition.z - 1);
-            else if (blockSide == BlockSide.TOP)
-                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y + 1, blockPosition.z);
-            else if (blockSide == BlockSide.BOTTOM)
-                neighbourPosition = new Vector3(blockPosition.x, blockPosition.y - 1, blockPosition.z);
-            else if (blockSide == BlockSide.RIGHT)
-                neighbourPosition = new Vector3(blockPosition.x + 1, blockPosition.y, blockPosition.z);
-            else if (blockSide == BlockSide.LEFT)
-                neighbourPosition = new Vector3(blockPosition.x - 1, blockPosition.y, blockPosition.z);
-
-            if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkBlocks.GetLength(0) &&
-                neighbourPosition.y >= 0 && neighbourPosition.y < chunkBlocks.GetLength(1) &&
-                neighbourPosition.z >= 0 && neighbourPosition.z < chunkBlocks.GetLength(2))
-            {
-                return chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
-            }
-
-            return true;
+            return chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
         }
+
+        return true;
     }
 
     void CreateBlockSide(BlockSide side)
@@ -128,7 +121,7 @@ public class Block
 
         GameObject blockSide = new GameObject("block side");
         blockSide.transform.position = blockPosition;
-        blockSide.transform.parent = blockParent.transform;
+        blockSide.transform.parent = chunkParent.chunkObject.transform;
 
         MeshFilter meshFilter = blockSide.AddComponent(typeof(MeshFilter)) as MeshFilter;
         meshFilter.mesh = mesh;
@@ -175,7 +168,11 @@ public class Block
                 mesh.triangles = triangles;
                 break;
         }
-
         return mesh;
+    }
+
+    public BlockType GetBlockType()
+    {
+        return this.blockType;
     }
 }

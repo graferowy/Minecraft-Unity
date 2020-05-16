@@ -2,39 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Chunk : MonoBehaviour
+public class Chunk
 {
-    public Texture2D[] atlasTextures;
     public Block[,,] chunkBlocks;
-
-    Dictionary<string, Rect> atlasDictionary = new Dictionary<string, Rect>();
-
+    public GameObject chunkObject;
     Material blockMaterial;
 
-    private void Start()
+    public Chunk(string name, Vector3 position, Material material)
     {
-        Texture2D atlas = GetTextureAtlas();
-        Material material = new Material(Shader.Find("Standard"));
-        material.mainTexture = atlas;
-        blockMaterial = material;
-        StartCoroutine(GenerateChunk(16));
+        this.chunkObject = new GameObject(name);
+        this.chunkObject.transform.position = position;
+        this.blockMaterial = material;
+        GenerateChunk(16);
     }
 
-    Texture2D GetTextureAtlas()
-    {
-        Texture2D textureAtlas = new Texture2D(8192, 8192);
-        Rect[] rectCoordinates = textureAtlas.PackTextures(atlasTextures, 0, 8192, false);
-        textureAtlas.Apply();
-
-        for (int i = 0; i < rectCoordinates.Length; i++)
-        {
-            atlasDictionary.Add(atlasTextures[i].name.ToLower(), rectCoordinates[i]);
-        }
-
-        return textureAtlas;
-    }
-
-    IEnumerator GenerateChunk(int chunkSize)
+    void GenerateChunk(int chunkSize)
     {
         chunkBlocks = new Block[chunkSize, chunkSize, chunkSize];
 
@@ -44,12 +26,15 @@ public class Chunk : MonoBehaviour
             {
                 for (int x = 0; x < chunkSize; x++)
                 {
-                    chunkBlocks[x, y, z] = new Block((Block.BlockType)Random.Range(0, 5), this.gameObject,
-                        new Vector3(x, y, z), atlasDictionary);
+                    chunkBlocks[x, y, z] = new Block((Block.BlockType)Random.Range(0, 4), this,
+                        new Vector3(x, y, z), World.atlasDictionary);
                 }
             }
         }
+    }
 
+    public void DrawChunk(int chunkSize)
+    {
         for (int z = 0; z < chunkSize; z++)
         {
             for (int y = 0; y < chunkSize; y++)
@@ -62,12 +47,11 @@ public class Chunk : MonoBehaviour
         }
 
         CombineSides();
-        yield return null;
     }
 
     void CombineSides()
     {
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+        MeshFilter[] meshFilters = chunkObject.GetComponentsInChildren<MeshFilter>();
         CombineInstance[] combineSides = new CombineInstance[meshFilters.Length];
 
         int index = 0;
@@ -78,16 +62,16 @@ public class Chunk : MonoBehaviour
             index++;
         }
 
-        MeshFilter blockMeshFilter = this.gameObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
+        MeshFilter blockMeshFilter = chunkObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
         blockMeshFilter.mesh = new Mesh();
         blockMeshFilter.mesh.CombineMeshes(combineSides);
 
-        MeshRenderer blockMeshRenderer = this.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+        MeshRenderer blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
         blockMeshRenderer.material = blockMaterial;
 
-        foreach (Transform side in this.transform)
+        foreach (Transform side in chunkObject.transform)
         {
-            Destroy(side.gameObject);
+            GameObject.Destroy(side.gameObject);
         }
     }
 }

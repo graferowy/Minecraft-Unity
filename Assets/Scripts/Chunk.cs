@@ -32,11 +32,14 @@ public class Chunk
                     float worldX = x + chunkObject.transform.position.x;
                     float worldY = y + chunkObject.transform.position.y;
                     float worldZ = z + chunkObject.transform.position.z;
+                    float caveProbability = ChunkUtils.PerlinNoise3D(worldX, worldY, worldZ);
                     int generated1stLayerY = (int)ChunkUtils.Generate1stLayerHeight(worldX, worldZ);
                     int generated2ndLayerY = (int)ChunkUtils.Generate2ndLayerHeight(worldX, worldZ, generated1stLayerY);
 
                     if (worldY == generated1stLayerY)
                         chunkBlocks[x, y, z] = new Block(World.blockTypes[3], this, new Vector3(x, y, z));
+                    else if (caveProbability > 0.5f && worldY < generated1stLayerY - 5)
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[0], this, new Vector3(x, y, z));
                     else if (worldY < generated2ndLayerY)
                         chunkBlocks[x, y, z] = new Block(World.blockTypes[4], this, new Vector3(x, y, z));
                     else if (worldY < generated1stLayerY)

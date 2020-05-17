@@ -32,7 +32,7 @@ public class Chunk
                     float worldX = x + chunkObject.transform.position.x;
                     float worldY = y + chunkObject.transform.position.y;
                     float worldZ = z + chunkObject.transform.position.z;
-                    float caveProbability = ChunkUtils.PerlinNoise3D(worldX, worldY, worldZ);
+                    float caveProbability = ChunkUtils.CalculateCaveProbability(worldX, worldY, worldZ);
                     int generated1stLayerY = (int)ChunkUtils.Generate1stLayerHeight(worldX, worldZ);
                     int generated2ndLayerY = (int)ChunkUtils.Generate2ndLayerHeight(worldX, worldZ, generated1stLayerY);
 

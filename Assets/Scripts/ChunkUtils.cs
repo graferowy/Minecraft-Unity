@@ -42,15 +42,24 @@ public static class ChunkUtils
         return height;
     }
 
-    public static float PerlinNoise3D(float x, float y, float z)
+    public static float CalculateCaveProbability(float x, float y, float z)
     {
-        float XY = PerlinNoise(x * caveIncrement + caveOffset, y * caveIncrement + caveOffset);
-        float XZ = PerlinNoise(x * caveIncrement + caveOffset, z * caveIncrement + caveOffset);
-        float YZ = PerlinNoise(y * caveIncrement + caveOffset, z * caveIncrement + caveOffset);
+        x = x * caveIncrement + caveOffset;
+        y = y * caveIncrement + caveOffset;
+        z = z * caveIncrement + caveOffset;
 
-        float YX = PerlinNoise(y * caveIncrement + caveOffset, x * caveIncrement + caveOffset);
-        float ZX = PerlinNoise(z * caveIncrement + caveOffset, x * caveIncrement + caveOffset);
-        float ZY = PerlinNoise(z * caveIncrement + caveOffset, y * caveIncrement + caveOffset);
+        return PerlinNoise3D(x, y, z);
+    }
+
+    static float PerlinNoise3D(float x, float y, float z)
+    {
+        float XY = PerlinNoise(x, y);
+        float XZ = PerlinNoise(x, z);
+        float YZ = PerlinNoise(y, z);
+
+        float YX = PerlinNoise(y, x);
+        float ZX = PerlinNoise(z, x);
+        float ZY = PerlinNoise(z, y);
 
         return (XY + XZ + YZ + YX + ZX + ZY) / 6.0f;
     }

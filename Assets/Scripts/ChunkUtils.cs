@@ -42,7 +42,7 @@ public static class ChunkUtils
         return height;
     }
 
-    public static float CalculateCaveProbability(float x, float y, float z)
+    public static float CalculateBlockProbability(float x, float y, float z)
     {
         x = x * caveIncrement + caveOffset;
         y = y * caveIncrement + caveOffset;

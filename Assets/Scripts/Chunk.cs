@@ -37,17 +37,30 @@ public class Chunk
                     int generated2ndLayerY = (int)ChunkUtils.Generate2ndLayerHeight(worldX, worldZ, generated1stLayerY);
 
                     if (worldY == generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[3], this, new Vector3(x, y, z));
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.GRASS], this, new Vector3(x, y, z));
                     else if (caveProbability > 0.5f && worldY < generated1stLayerY - 5)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[0], this, new Vector3(x, y, z));
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.AIR], this, new Vector3(x, y, z));
                     else if (worldY < generated2ndLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[4], this, new Vector3(x, y, z));
+                    {
+                        if (caveProbability < 0.1f)
+                        {
+                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.DIAMOND], this, new Vector3(x, y, z));
+                        }
+                        else if (caveProbability < 0.25f)
+                        {
+                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.CARBON], this, new Vector3(x, y, z));
+                        }
+                        else
+                        {
+                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.STONE], this, new Vector3(x, y, z));
+                        }
+                    }
                     else if (worldY < generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[1], this, new Vector3(x, y, z));
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.DIRT], this, new Vector3(x, y, z));
                     else
                     {
                         this.status = chunkStatus.TO_DRAW;
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[0], this, new Vector3(x, y, z));
+                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.AIR], this, new Vector3(x, y, z));
                     }
                 }
             }

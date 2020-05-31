@@ -22,6 +22,7 @@ public class Chunk
     void GenerateChunk(int chunkSize)
     {
         chunkBlocks = new Block[chunkSize, chunkSize, chunkSize];
+        Biome biome = BiomeUtils.SelectBiome(this.chunkObject.transform.position);
 
         for (int z = 0; z < chunkSize; z++)
         {
@@ -32,36 +33,11 @@ public class Chunk
                     float worldX = x + chunkObject.transform.position.x;
                     float worldY = y + chunkObject.transform.position.y;
                     float worldZ = z + chunkObject.transform.position.z;
-                    float typeProbability = ChunkUtils.CalculateBlockProbability(worldX, worldY, worldZ);
-                    int generated1stLayerY = (int)ChunkUtils.Generate1stLayerHeight(worldX, worldZ);
-                    int generated2ndLayerY = (int)ChunkUtils.Generate2ndLayerHeight(worldX, worldZ, generated1stLayerY);
+                    BlockType biomeBlock = biome.GenerateTerrain(worldX, worldY, worldZ);
+                    chunkBlocks[x, y, z] = new Block(biomeBlock, this, new Vector3(x, y, z));
 
-                    if (worldY == generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.GRASS], this, new Vector3(x, y, z));
-                    else if (typeProbability > 0.5f && worldY < generated1stLayerY - 5)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.AIR], this, new Vector3(x, y, z));
-                    else if (worldY < generated2ndLayerY)
-                    {
-                        if (typeProbability < 0.1f)
-                        {
-                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.DIAMOND], this, new Vector3(x, y, z));
-                        }
-                        else if (typeProbability < 0.25f)
-                        {
-                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.CARBON], this, new Vector3(x, y, z));
-                        }
-                        else
-                        {
-                            chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.STONE], this, new Vector3(x, y, z));
-                        }
-                    }
-                    else if (worldY < generated1stLayerY)
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.DIRT], this, new Vector3(x, y, z));
-                    else
-                    {
-                        this.status = chunkStatus.TO_DRAW;
-                        chunkBlocks[x, y, z] = new Block(World.blockTypes[BlockType.Type.AIR], this, new Vector3(x, y, z));
-                    }
+                    if (biomeBlock == World.blockTypes[BlockType.Type.AIR])
+                            this.status = chunkStatus.TO_DRAW;
                 }
             }
         }

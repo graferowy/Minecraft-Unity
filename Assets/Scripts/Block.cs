@@ -62,7 +62,7 @@ public class Block
 
     public void CreateBlock()
     {
-        if (blockType.name == "air")
+        if (blockType.isTransparent)
             return;
 
         if (HasTransparentNeighbour(BlockSide.FRONT))

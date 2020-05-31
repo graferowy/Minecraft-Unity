@@ -9,7 +9,7 @@ public class World : MonoBehaviour
     public static Dictionary<string, Rect> atlasDictionary = new Dictionary<string, Rect>();
     public static Dictionary<string, Chunk> chunks = new Dictionary<string, Chunk>();
     public int columnHeight = 16;
-    public int chunkSize = 16;
+    public static int chunkSize = 16;
     public int worldRadius = 2;
     Material blockMaterial;
 
@@ -113,9 +113,14 @@ public class World : MonoBehaviour
     void GenerateBlockTypes()
     {
         BlockType air = new BlockType("air", true, true);
-        air.sideUV = SetBlockTypeUV("air");
+        air.sideUV = SetBlockTypeUV();
         air.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.AIR, air);
+
+        BlockType cave = new BlockType("cave", true, true);
+        cave.sideUV = SetBlockTypeUV();
+        cave.GenerateBlockUVs();
+        blockTypes.Add(BlockType.Type.CAVE, cave);
 
         BlockType dirt = new BlockType("dirt", false, true);
         dirt.sideUV = SetBlockTypeUV("dirt");
@@ -148,11 +153,21 @@ public class World : MonoBehaviour
         diamond.sideUV = SetBlockTypeUV("diamond");
         diamond.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.DIAMOND, diamond);
+
+        BlockType snow = new BlockType("snow", false, true);
+        snow.sideUV = SetBlockTypeUV("snow");
+        snow.GenerateBlockUVs();
+        blockTypes.Add(BlockType.Type.SNOW, snow);
+
+        BlockType sand = new BlockType("sand", false, true);
+        sand.sideUV = SetBlockTypeUV("sand");
+        sand.GenerateBlockUVs();
+        blockTypes.Add(BlockType.Type.SAND, sand);
     }
 
-    Vector2[] SetBlockTypeUV(string name)
+    Vector2[] SetBlockTypeUV(string name = null)
     {
-        if (name == "air")
+        if (name == null)
         {
             return new Vector2[4] { new Vector2(0f, 0f),
                                     new Vector2(1f, 0f),

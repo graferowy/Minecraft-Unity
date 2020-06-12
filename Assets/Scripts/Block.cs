@@ -53,16 +53,27 @@ public class Block
         if (blockType.isTransparent)
             return;
 
-        foreach (BlockSide side in Enum.GetValues(typeof(BlockSide)))
-        {
-            if (HasTransparentNeighbour(side))
-                GenerateBlockSide(side);
-        }
+        if (HasTransparentNeighbour(BlockSide.FRONT))
+            GenerateBlockSide(BlockSide.FRONT);
+
+        if (HasTransparentNeighbour(BlockSide.BACK))
+            GenerateBlockSide(BlockSide.BACK);
+
+        if (HasTransparentNeighbour(BlockSide.LEFT))
+            GenerateBlockSide(BlockSide.LEFT);
+
+        if (HasTransparentNeighbour(BlockSide.RIGHT))
+            GenerateBlockSide(BlockSide.RIGHT);
+
+        if (HasTransparentNeighbour(BlockSide.TOP))
+            GenerateBlockSide(BlockSide.TOP);
+
+        if (HasTransparentNeighbour(BlockSide.BOTTOM))
+            GenerateBlockSide(BlockSide.BOTTOM);
     }
 
     bool HasTransparentNeighbour(BlockSide blockSide)
     {
-        Block[,,] chunkBlocks = chunkParent.chunkBlocks;
         Vector3 neighbourPosition = new Vector3(0, 0, 0);
 
         if (blockSide == BlockSide.FRONT)
@@ -78,11 +89,11 @@ public class Block
         else if (blockSide == BlockSide.LEFT)
             neighbourPosition = new Vector3(blockPosition.x - 1, blockPosition.y, blockPosition.z);
 
-        if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkBlocks.GetLength(0) &&
-            neighbourPosition.y >= 0 && neighbourPosition.y < chunkBlocks.GetLength(1) &&
-            neighbourPosition.z >= 0 && neighbourPosition.z < chunkBlocks.GetLength(2))
+        if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkParent.chunkBlocks.GetLength(0) &&
+            neighbourPosition.y >= 0 && neighbourPosition.y < chunkParent.chunkBlocks.GetLength(1) &&
+            neighbourPosition.z >= 0 && neighbourPosition.z < chunkParent.chunkBlocks.GetLength(2))
         {
-            return chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
+            return chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
         }
 
         return true;

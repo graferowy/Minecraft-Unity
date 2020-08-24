@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class BlockType
 {
-    public enum Type { AIR, CAVE, DIRT, BRICK, GRASS, STONE, CARBON, DIAMOND, SNOW, SAND }
+    public enum Type { AIR, CAVE, DIRT, BRICK, GRASS, STONE, CARBON, DIAMOND, SNOW, SAND, GLASS }
     public string name { get; private set; }
     public bool isTransparent { get; private set; }
+    public bool isTranslucent { get; private set; }
     public bool everySideSame { get; private set; }
 
     public Vector2[] topUV { private get; set; }
@@ -15,10 +16,11 @@ public class BlockType
 
     List<Vector2[]> blockUVs = new List<Vector2[]>();
 
-    public BlockType(string typeName, bool isTransparent, bool everySideSame)
+    public BlockType(string typeName, bool isTransparent, bool isTranslucent, bool everySideSame)
     {
         this.name = typeName;
         this.isTransparent = isTransparent;
+        this.isTranslucent = isTranslucent;
         this.everySideSame = everySideSame;
     }
 

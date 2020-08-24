@@ -6,12 +6,13 @@ using System.Linq;
 public class World : MonoBehaviour
 {
     public Texture2D[] atlasTextures;
+    public Texture2D[] atlasTransparentTextures;
     public static Dictionary<string, Rect> atlasDictionary = new Dictionary<string, Rect>();
     public static Dictionary<string, Chunk> chunks = new Dictionary<string, Chunk>();
     public int columnHeight = 16;
     public static int chunkSize = 16;
     public int worldRadius = 2;
-    Material blockMaterial;
+    Material[] blockMaterial = new Material[2];
 
     GameObject player;
     Vector2 lastPlayerPosition;
@@ -30,7 +31,13 @@ public class World : MonoBehaviour
         Texture2D atlas = GetTextureAtlas();
         Material material = new Material(Shader.Find("Standard"));
         material.mainTexture = atlas;
-        blockMaterial = material;
+        blockMaterial[0] = material;
+        
+        Texture2D transparentAtlas = GetTextureAtlas(true);
+        Material transparentMaterial = new Material(Shader.Find("Unlit/Transparent"));
+        transparentMaterial.mainTexture = transparentAtlas;
+        blockMaterial[1] = transparentMaterial;
+
         ChunkUtils.GenerateRandomOffset();
         GenerateBlockTypes();
         GenerateWorld();
@@ -112,54 +119,59 @@ public class World : MonoBehaviour
 
     void GenerateBlockTypes()
     {
-        BlockType air = new BlockType("air", true, true);
+        BlockType air = new BlockType("air", true, true, true);
         air.sideUV = SetBlockTypeUV();
         air.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.AIR, air);
+        
+        BlockType glass = new BlockType("glass", false, true, true);
+        glass.sideUV = SetBlockTypeUV();
+        glass.GenerateBlockUVs();
+        blockTypes.Add(BlockType.Type.GLASS, glass);
 
-        BlockType cave = new BlockType("cave", true, true);
+        BlockType cave = new BlockType("cave", true, true, true);
         cave.sideUV = SetBlockTypeUV();
         cave.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.CAVE, cave);
 
-        BlockType dirt = new BlockType("dirt", false, true);
+        BlockType dirt = new BlockType("dirt", false, false, true);
         dirt.sideUV = SetBlockTypeUV("dirt");
         dirt.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.DIRT, dirt);
 
-        BlockType brick = new BlockType("brick", false, true);
+        BlockType brick = new BlockType("brick", false, false, true);
         brick.sideUV = SetBlockTypeUV("brick");
         brick.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.BRICK, brick);
 
-        BlockType grass = new BlockType("grass", false, false);
+        BlockType grass = new BlockType("grass", false, false, false);
         grass.topUV = SetBlockTypeUV("grass");
         grass.sideUV = SetBlockTypeUV("grass_side");
         grass.bottomUV = SetBlockTypeUV("dirt");
         grass.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.GRASS, grass);
 
-        BlockType stone = new BlockType("stone", false, true);
+        BlockType stone = new BlockType("stone", false, false, true);
         stone.sideUV = SetBlockTypeUV("stone");
         stone.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.STONE, stone);
 
-        BlockType carbon = new BlockType("carbon", false, true);
+        BlockType carbon = new BlockType("carbon", false, false, true);
         carbon.sideUV = SetBlockTypeUV("carbon");
         carbon.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.CARBON, carbon);
 
-        BlockType diamond = new BlockType("diamond", false, true);
+        BlockType diamond = new BlockType("diamond", false, false, true);
         diamond.sideUV = SetBlockTypeUV("diamond");
         diamond.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.DIAMOND, diamond);
 
-        BlockType snow = new BlockType("snow", false, true);
+        BlockType snow = new BlockType("snow", false, false, true);
         snow.sideUV = SetBlockTypeUV("snow");
         snow.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.SNOW, snow);
 
-        BlockType sand = new BlockType("sand", false, true);
+        BlockType sand = new BlockType("sand", false, false, true);
         sand.sideUV = SetBlockTypeUV("sand");
         sand.GenerateBlockUVs();
         blockTypes.Add(BlockType.Type.SAND, sand);
@@ -198,15 +210,16 @@ public class World : MonoBehaviour
             (int)chunkPosition.z;
     }
 
-    Texture2D GetTextureAtlas()
+    Texture2D GetTextureAtlas(bool transparent = false)
     {
+        Texture2D[] usedAtlas = transparent ? this.atlasTransparentTextures : this.atlasTextures;
         Texture2D textureAtlas = new Texture2D(8192, 8192);
-        Rect[] rectCoordinates = textureAtlas.PackTextures(atlasTextures, 0, 8192, false);
+        Rect[] rectCoordinates = textureAtlas.PackTextures(usedAtlas, 0, 8192, false);
         textureAtlas.Apply();
 
         for (int i = 0; i < rectCoordinates.Length; i++)
         {
-            atlasDictionary.Add(atlasTextures[i].name.ToLower(), rectCoordinates[i]);
+            atlasDictionary.Add(usedAtlas[i].name.ToLower(), rectCoordinates[i]);
         }
 
         return textureAtlas;

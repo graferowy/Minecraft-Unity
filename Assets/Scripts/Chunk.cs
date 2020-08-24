@@ -6,16 +6,17 @@ public class Chunk
 {
     public Block[,,] chunkBlocks;
     public GameObject chunkObject;
-    Material blockMaterial;
+    Material[] blockMaterial;
     public enum chunkStatus { GENERATED, DRAWN, TO_DRAW };
     public chunkStatus status;
     public int VertexIndex { get; set; }
 
     public List<Vector3> vertices = new List<Vector3>();
     public List<int> triangles = new List<int>();
+    public List<int> transparentTriangles = new List<int>();
     public List<Vector2> uvs = new List<Vector2>();
 
-    public Chunk(string name, Vector3 position, Material material)
+    public Chunk(string name, Vector3 position, Material[] material)
     {
         this.chunkObject = new GameObject(name);
         this.chunkObject.transform.position = position;
@@ -107,7 +108,9 @@ public class Chunk
     {
         var mesh = new Mesh();
         mesh.vertices = vertices.ToArray();
-        mesh.triangles = triangles.ToArray();
+        mesh.subMeshCount = 2;
+        mesh.SetTriangles(triangles.ToArray(), 0);
+        mesh.SetTriangles(transparentTriangles.ToArray(), 1);
         mesh.uv = uvs.ToArray();
         mesh.RecalculateNormals();
 
@@ -115,7 +118,7 @@ public class Chunk
         blockMeshFilter.mesh = mesh;
 
         MeshRenderer blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-        blockMeshRenderer.material = blockMaterial;
+        blockMeshRenderer.materials = blockMaterial;
 
         chunkObject.AddComponent(typeof(MeshCollider));
 

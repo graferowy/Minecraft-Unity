@@ -8,7 +8,6 @@ public class Block
     public enum BlockSide { FRONT, BACK, LEFT, RIGHT, TOP, BOTTOM };
 
     BlockType blockType;
-    bool isTransparent;
     Chunk chunkParent;
     Vector3 blockPosition;
 
@@ -41,11 +40,6 @@ public class Block
         this.blockType = blockType;
         this.chunkParent = chunkParent;
         this.blockPosition = blockPosition;
-
-        if (blockType.isTransparent)
-            isTransparent = true;
-        else
-            isTransparent = false;
     }
 
     public void CreateBlock()
@@ -93,7 +87,8 @@ public class Block
             neighbourPosition.y >= 0 && neighbourPosition.y < chunkParent.chunkBlocks.GetLength(1) &&
             neighbourPosition.z >= 0 && neighbourPosition.z < chunkParent.chunkBlocks.GetLength(2))
         {
-            return chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].isTransparent;
+            return chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].blockType.isTransparent ||
+                   chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].blockType.isTranslucent;
         }
 
         return true;
@@ -132,7 +127,10 @@ public class Block
         foreach (Vector2 blockUV in blockType.GetBlockUVs(side)) 
             chunkParent.uvs.Add(blockUV);
         foreach (int triangle in triangles) 
-            chunkParent.triangles.Add(chunkParent.VertexIndex + triangle);
+            if (this.blockType.isTranslucent || this.blockType.isTransparent)
+                chunkParent.transparentTriangles.Add(chunkParent.VertexIndex + triangle);
+            else
+                chunkParent.triangles.Add(chunkParent.VertexIndex + triangle);
 
         chunkParent.VertexIndex += 4;
     }

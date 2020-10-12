@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Chunk
@@ -14,6 +15,7 @@ public class Chunk
     public List<Vector3> vertices = new List<Vector3>();
     public List<int> triangles = new List<int>();
     public List<int> transparentTriangles = new List<int>();
+    public List<int> waterTriangles = new List<int>();
     public List<Vector2> uvs = new List<Vector2>();
 
     public Chunk(string name, Vector3 position, Material[] material)
@@ -110,17 +112,24 @@ public class Chunk
         mesh.vertices = vertices.ToArray();
         mesh.subMeshCount = 2;
         mesh.SetTriangles(triangles.ToArray(), 0);
-        mesh.SetTriangles(transparentTriangles.ToArray(), 1);
+        mesh.SetTriangles(transparentTriangles.ToArray().Concat(waterTriangles.ToArray()).ToArray(), 1);
         mesh.uv = uvs.ToArray();
         mesh.RecalculateNormals();
+        
+        var colliderMesh = new Mesh();
+        colliderMesh.vertices = mesh.vertices;
+        colliderMesh.subMeshCount = 2;
+        colliderMesh.SetTriangles(triangles.ToArray(), 0);
+        colliderMesh.SetTriangles(transparentTriangles.ToArray(), 1);
 
         MeshFilter blockMeshFilter = chunkObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
         blockMeshFilter.mesh = mesh;
 
         MeshRenderer blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
         blockMeshRenderer.materials = blockMaterial;
-
-        chunkObject.AddComponent(typeof(MeshCollider));
+        
+        MeshCollider blockMeshCollider = chunkObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
+        blockMeshCollider.sharedMesh = colliderMesh;
 
         foreach (Transform side in chunkObject.transform)
         {

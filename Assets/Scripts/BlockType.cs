@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BlockType
 {
-    public enum Type { AIR, CAVE, DIRT, BRICK, GRASS, STONE, CARBON, DIAMOND, SNOW, SAND, GLASS }
+    public enum Type { AIR, CAVE, DIRT, BRICK, GRASS, STONE, CARBON, DIAMOND, SNOW, SAND, GLASS, WATER }
     public string name { get; private set; }
     public bool isTransparent { get; private set; }
     public bool isTranslucent { get; private set; }
@@ -64,5 +64,15 @@ public class BlockType
         {
             this.blockUVs.Add(new Vector2[] { bottomUV[3], bottomUV[2], bottomUV[0], bottomUV[1] });
         }
+    }
+
+    public bool isLiquid()
+    {
+        if (this.name == "water")
+        {
+            return true;
+        }
+
+        return false;
     }
 }

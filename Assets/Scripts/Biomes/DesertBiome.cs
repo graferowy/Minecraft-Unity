@@ -5,6 +5,7 @@ using UnityEngine;
 public class DesertBiome : Biome
 {
     public override float firstLayerIncrement { get { return 0.005f; } }
+    public override float waterLayerY { get { return 0; } }
 
     public override BlockType GenerateTerrain(float x, float y, float z)
     {

@@ -83,15 +83,44 @@ public class Block
         else if (blockSide == BlockSide.LEFT)
             neighbourPosition = new Vector3(blockPosition.x - 1, blockPosition.y, blockPosition.z);
 
-        if (neighbourPosition.x >= 0 && neighbourPosition.x < chunkParent.chunkBlocks.GetLength(0) &&
-            neighbourPosition.y >= 0 && neighbourPosition.y < chunkParent.chunkBlocks.GetLength(1) &&
-            neighbourPosition.z >= 0 && neighbourPosition.z < chunkParent.chunkBlocks.GetLength(2))
+        Block[,,] chunkBlocks = chunkParent.chunkBlocks;        
+
+        if (neighbourPosition.x < 0 || neighbourPosition.x >= World.chunkSize || 
+            neighbourPosition.y < 0 || neighbourPosition.y >= World.chunkSize ||
+            neighbourPosition.z < 0 || neighbourPosition.z >= World.chunkSize)
         {
-            return chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].blockType.isTransparent ||
-                   chunkParent.chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].blockType.isTranslucent;
+            Vector3 neighbourChunkPosition = this.chunkParent.chunkObject.transform.position;
+            neighbourChunkPosition.x += (neighbourPosition.x - blockPosition.x) * World.chunkSize;
+            neighbourChunkPosition.y += (neighbourPosition.y - blockPosition.y) * World.chunkSize;
+            neighbourChunkPosition.z += (neighbourPosition.z - blockPosition.z) * World.chunkSize;
+
+            string neighbourChunkName = World.GenerateChunkName(neighbourChunkPosition);
+            
+            Chunk neighbourChunk;
+
+            if (World.chunks.TryGetValue(neighbourChunkName, out neighbourChunk))
+            {
+                chunkBlocks = neighbourChunk.chunkBlocks;
+            }
+            else
+            {
+                return true;
+            }
         }
 
-        return true;
+        if (neighbourPosition.x < 0) neighbourPosition.x = World.chunkSize - 1;
+        if (neighbourPosition.y < 0) neighbourPosition.y = World.chunkSize - 1;
+        if (neighbourPosition.z < 0) neighbourPosition.z = World.chunkSize - 1;
+        if (neighbourPosition.x >= World.chunkSize) neighbourPosition.x = 0;
+        if (neighbourPosition.y >= World.chunkSize) neighbourPosition.y = 0;
+        if (neighbourPosition.z >= World.chunkSize) neighbourPosition.z = 0;
+
+        var neighbourBlockType = chunkBlocks[(int)neighbourPosition.x, (int)neighbourPosition.y, (int)neighbourPosition.z].blockType;
+
+        if (this.blockType.isTranslucent && neighbourBlockType.isTranslucent && !neighbourBlockType.isTransparent)
+            return false;
+        
+        return neighbourBlockType.isTransparent || neighbourBlockType.isTranslucent;
     }
 
     void GenerateBlockSide(BlockSide side)
@@ -126,11 +155,16 @@ public class Block
         
         foreach (Vector2 blockUV in blockType.GetBlockUVs(side)) 
             chunkParent.uvs.Add(blockUV);
-        foreach (int triangle in triangles) 
-            if (this.blockType.isTranslucent || this.blockType.isTransparent)
+        
+        foreach (int triangle in triangles)
+        {
+            if (this.blockType.isLiquid())
+                chunkParent.waterTriangles.Add(chunkParent.VertexIndex + triangle);
+            else if (this.blockType.isTranslucent || this.blockType.isTransparent)
                 chunkParent.transparentTriangles.Add(chunkParent.VertexIndex + triangle);
             else
                 chunkParent.triangles.Add(chunkParent.VertexIndex + triangle);
+        }
 
         chunkParent.VertexIndex += 4;
     }

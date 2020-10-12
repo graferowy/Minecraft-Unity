@@ -7,6 +7,7 @@ public abstract class Biome
     public virtual float typeIncrement { get { return 0.08f; } }
     public virtual float firstLayerIncrement { get { return 0.02f; } }
     public virtual float secondLayerIncrement { get { return 0.1f; } }
+    public virtual float waterLayerY { get { return 25; } }
 
     protected float typeProbability;
     protected int generated1stLayerY;
@@ -36,6 +37,11 @@ public abstract class Biome
             return Generate1stLayer();
         }
 
+        if (y < waterLayerY)
+        {
+            return GenerateWaterLayer();
+        }
+
         return World.blockTypes[BlockType.Type.AIR];
     }
 
@@ -57,6 +63,11 @@ public abstract class Biome
     protected virtual BlockType Generate1stLayer()
     {
         return World.blockTypes[BlockType.Type.DIRT];
+    }
+    
+    protected virtual BlockType GenerateWaterLayer()
+    {
+        return World.blockTypes[BlockType.Type.WATER];
     }
 
     public virtual void GenerateTerrainValues(float x, float y, float z)

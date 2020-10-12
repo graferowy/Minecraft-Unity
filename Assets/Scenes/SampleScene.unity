@@ -43,7 +43,7 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
+  serializedVersion: 11
   m_GIWorkflowMode: 1
   m_GISettings:
     serializedVersion: 2
@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_LightingSettings: {fileID: 4890085278179872738, guid: 4ad5dbc068dbdfb48a78a784736656e7, type: 2}
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -118,8 +118,6 @@ NavMeshSettings:
     manualTileSize: 0
     tileSize: 256
     accuratePlacement: 0
-    maxJobWorkers: 0
-    preserveTilesOutsideBounds: 0
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
@@ -199,7 +197,6 @@ Light:
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
-  m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &274586082
@@ -255,8 +252,10 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 10d39e71c064c3b45addea89ed834fbd, type: 3}
   - {fileID: 2800000, guid: 202ef547de65b214cbd6629c38b92888, type: 3}
   - {fileID: 2800000, guid: 3a4eb9fd4c388a84fb6f0ea87a3fb75a, type: 3}
+  atlasTransparentTextures:
+  - {fileID: 2800000, guid: f3f76b270e2814145968f5dd020eb661, type: 3}
+  - {fileID: 2800000, guid: 63943e523d712924bb937ad04d49f541, type: 3}
   columnHeight: 4
-  chunkSize: 16
   worldRadius: 3
 --- !u!4 &568262561
 Transform:
@@ -331,8 +330,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41, type: 3}
+    - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
       propertyPath: autoCrosshair
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114051214696948948, guid: 2e62f5703e5f8d2488a5e1bc8433be41,
+        type: 3}
+      propertyPath: fsmode
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

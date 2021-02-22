@@ -6,11 +6,11 @@ using Random = UnityEngine.Random;
 
 public static class ChunkUtils
 {
-    static int firstLayerOffset = 0;
-    static int secondLayerOffset = 0;
-    static int typeOffset = 0;
-    static int moistureOffset = 0;
-    static int temperatureOffset = 0;
+    public static int firstLayerOffset = 0;
+    public static int secondLayerOffset = 0;
+    public static int typeOffset = 0;
+    public static int moistureOffset = 0;
+    public static int temperatureOffset = 0;
     static int maxHeight = 64;
 
     public static float Generate1stLayerHeight(float x, float z, float increment = 0.02f)

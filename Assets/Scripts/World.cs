@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Security.Cryptography;
 
 public class World : MonoBehaviour
 {
@@ -41,7 +42,7 @@ public class World : MonoBehaviour
         ChunkUtils.GenerateRandomOffset();
         GenerateBlockTypes();
         GenerateWorld();
-        StartCoroutine(BuildWorld(true));
+        StartCoroutine(BuildWorld());
     }
 
     private void Update()
@@ -56,7 +57,7 @@ public class World : MonoBehaviour
         }
     }
 
-    IEnumerator BuildWorld(bool isFirst = false)
+    IEnumerator BuildWorld()
     {
         foreach (Chunk chunk in chunks.Values.ToList())
         {
@@ -68,7 +69,7 @@ public class World : MonoBehaviour
             yield return null;
         }
 
-        if (isFirst)
+        if (!player.activeInHierarchy)
         {
             player.SetActive(true);
         }
@@ -109,6 +110,39 @@ public class World : MonoBehaviour
                     else
                     {
                         chunk = new Chunk(chunkName, chunkPosition, blockMaterial);
+                        chunk.chunkObject.transform.parent = this.transform;
+                        chunks.Add(chunkName, chunk);
+                    }
+                }
+            }
+        }
+    }
+    
+    public void GenerateLoadedWorld(List<ChunkData> chunksData)
+    {
+        chunks.Clear();
+        lastPlayerPosition = Vector3.negativeInfinity;
+        player.SetActive(false);
+
+        foreach (Transform child in this.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        for (int z = -worldRadius + (int)currentPlayerPosition.y - 1; z <= worldRadius + (int)currentPlayerPosition.y + 1; z++)
+        {
+            for (int x = -worldRadius + (int)currentPlayerPosition.x - 1; x <= worldRadius + (int)currentPlayerPosition.x + 1; x++)
+            {
+                for (int y = 0; y < columnHeight; y++)
+                {
+                    Vector3 chunkPosition = new Vector3(x * chunkSize, y * chunkSize, z * chunkSize);
+                    string chunkName = GenerateChunkName(chunkPosition);
+                    Chunk chunk;
+                    ChunkData chunkData = chunksData.Find(i => i.Name == chunkName);
+
+                    if (chunkData != null)
+                    {
+                        chunk = new Chunk(chunkName, chunkPosition, blockMaterial, chunkData.Blocks);
                         chunk.chunkObject.transform.parent = this.transform;
                         chunks.Add(chunkName, chunk);
                     }

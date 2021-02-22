@@ -26,6 +26,15 @@ public class Chunk
         this.status = chunkStatus.GENERATED;
         GenerateChunk(16);
     }
+    
+    public Chunk(string name, Vector3 position, Material[] material, BlockType.Type[,,] blockTypes)
+    {
+        this.chunkObject = new GameObject(name);
+        this.chunkObject.transform.position = position;
+        this.blockMaterial = material;
+        this.status = chunkStatus.GENERATED;
+        GenerateLoadedChunk(16, blockTypes);
+    }
 
     void GenerateChunk(int chunkSize)
     {
@@ -58,6 +67,22 @@ public class Chunk
             if (World.chunks.TryGetValue(chunkName, out chunkBelow))
             {
                 chunkBelow.status = chunkStatus.TO_DRAW;
+            }
+        }
+    }
+    
+    void GenerateLoadedChunk(int chunkSize, BlockType.Type[,,] blockTypes)
+    {
+        chunkBlocks = new Block[chunkSize, chunkSize, chunkSize];
+
+        for (int z = 0; z < chunkSize; z++)
+        {
+            for (int y = 0; y < chunkSize; y++)
+            {
+                for (int x = 0; x < chunkSize; x++)
+                {
+                    chunkBlocks[x, y, z] = new Block(World.blockTypes[blockTypes[x, y, z]], this, new Vector3(x, y, z));
+                }
             }
         }
     }
@@ -135,5 +160,24 @@ public class Chunk
         {
             GameObject.Destroy(side.gameObject);
         }
+    }
+
+    public BlockType.Type[,,] GetBlockTypes()
+    {
+        var arraySize = chunkBlocks.GetLength(0);
+        var blockTypes = new BlockType.Type[arraySize, arraySize, arraySize];
+
+        for (int i = 0; i < arraySize; i++)
+        {
+            for (int j = 0; j < arraySize; j++)
+            {
+                for (int k = 0; k < arraySize; k++)
+                {
+                    blockTypes[i, j, k] = chunkBlocks[i, j, k].GetBlockType().blockType;
+                }
+            }
+        }
+
+        return blockTypes;
     }
 }

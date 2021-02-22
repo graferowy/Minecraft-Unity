@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public class BlockType
     public bool isTransparent { get; private set; }
     public bool isTranslucent { get; private set; }
     public bool everySideSame { get; private set; }
+
+    public Type blockType { get; private set; }
 
     public Vector2[] topUV { private get; set; }
     public Vector2[] sideUV { private get; set; }
@@ -22,6 +25,7 @@ public class BlockType
         this.isTransparent = isTransparent;
         this.isTranslucent = isTranslucent;
         this.everySideSame = everySideSame;
+        this.blockType = (Type) Enum.Parse(typeof(Type), typeName.ToUpper());
     }
 
     public Vector2[] GetUV(Block.BlockSide side)

@@ -173,4 +173,9 @@ public class Block
     {
         return this.blockType;
     }
+
+    public void SetBlockType(BlockType type)
+    {
+        this.blockType = type;
+    }
 }

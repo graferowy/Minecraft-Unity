@@ -242,6 +242,16 @@ public class World : MonoBehaviour
             };
     }
 
+    public void DestroyBlock(string chunkName, Vector3 blockPosition)
+    {
+        Chunk chunk;
+        
+        if (World.chunks.TryGetValue(chunkName, out chunk))
+        {
+            chunk.DestroyBlock(blockPosition);
+        }
+    }
+
     public static string GenerateChunkName(Vector3 chunkPosition)
     {
         return chunkPosition.x + "_" +

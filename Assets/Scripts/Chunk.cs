@@ -131,6 +131,31 @@ public class Chunk
         this.status = chunkStatus.DRAWN;
     }
 
+    private void RedrawChunk(int chunkSize)
+    {
+        vertices = new List<Vector3>();
+        triangles = new List<int>();
+        transparentTriangles = new List<int>();
+        waterTriangles = new List<int>();
+        uvs = new List<Vector2>();
+        DrawChunk(chunkSize);
+    }
+    
+    private void RedrawNeighbourChunk(Vector3 neighbourPosition)
+    {
+        Vector3 neighbourChunkPos = this.chunkObject.transform.position;
+        neighbourChunkPos.x += neighbourPosition.x;
+        neighbourChunkPos.y += neighbourPosition.y;
+        neighbourChunkPos.z += neighbourPosition.z;
+        string neighbourChunkName = World.GenerateChunkName(neighbourChunkPos);
+        Chunk neighbourChunk;
+        
+        if (World.chunks.TryGetValue(neighbourChunkName, out neighbourChunk))
+        {
+            neighbourChunk.RedrawChunk(World.chunkSize);
+        }
+    }
+
     void CombineSides()
     {
         var mesh = new Mesh();
@@ -147,19 +172,52 @@ public class Chunk
         colliderMesh.SetTriangles(triangles.ToArray(), 0);
         colliderMesh.SetTriangles(transparentTriangles.ToArray(), 1);
 
-        MeshFilter blockMeshFilter = chunkObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
+        if (!chunkObject.TryGetComponent<MeshFilter>(out MeshFilter blockMeshFilter))
+        {
+            blockMeshFilter = chunkObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
+        }
+        
         blockMeshFilter.mesh = mesh;
 
-        MeshRenderer blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-        blockMeshRenderer.materials = blockMaterial;
+        if (!chunkObject.TryGetComponent<MeshRenderer>(out MeshRenderer blockMeshRenderer))
+        {
+            blockMeshRenderer = chunkObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+        }
         
-        MeshCollider blockMeshCollider = chunkObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
+        blockMeshRenderer.materials = blockMaterial;
+
+        if (!chunkObject.TryGetComponent<MeshCollider>(out MeshCollider blockMeshCollider))
+        {
+            blockMeshCollider = chunkObject.AddComponent(typeof(MeshCollider)) as MeshCollider;
+        }
+        
         blockMeshCollider.sharedMesh = colliderMesh;
 
         foreach (Transform side in chunkObject.transform)
         {
             GameObject.Destroy(side.gameObject);
         }
+    }
+
+    public void DestroyBlock(Vector3 blockPosition)
+    {
+        if (blockPosition.x >= World.chunkSize || blockPosition.x < 0
+                                               || blockPosition.y >= World.chunkSize || blockPosition.y < 0
+                                               || blockPosition.z >= World.chunkSize || blockPosition.z < 0)
+        {
+            return;
+        }
+
+        Block block = chunkBlocks[(int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z];
+        block.SetBlockType(World.blockTypes[BlockType.Type.AIR]);
+        RedrawChunk(World.chunkSize);
+
+        if (blockPosition.x == 0) RedrawNeighbourChunk(new Vector3(-16, 0, 0));
+        if (blockPosition.x == World.chunkSize - 1) RedrawNeighbourChunk(new Vector3(16, 0, 0));
+        if (blockPosition.y == 0) RedrawNeighbourChunk(new Vector3(0, -16, 0));
+        if (blockPosition.y == World.chunkSize - 1) RedrawNeighbourChunk(new Vector3(0, 16, 0));
+        if (blockPosition.z == 0) RedrawNeighbourChunk(new Vector3(0, 0, -16));
+        if (blockPosition.z == World.chunkSize - 1) RedrawNeighbourChunk(new Vector3(0, 0, 16));
     }
 
     public BlockType.Type[,,] GetBlockTypes()

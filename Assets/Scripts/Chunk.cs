@@ -199,7 +199,7 @@ public class Chunk
         }
     }
 
-    public void DestroyBlock(Vector3 blockPosition)
+    public void ChangeBlockType(Vector3 blockPosition, BlockType blockType)
     {
         if (blockPosition.x >= World.chunkSize || blockPosition.x < 0
                                                || blockPosition.y >= World.chunkSize || blockPosition.y < 0
@@ -207,9 +207,9 @@ public class Chunk
         {
             return;
         }
-
+        
         Block block = chunkBlocks[(int)blockPosition.x, (int)blockPosition.y, (int)blockPosition.z];
-        block.SetBlockType(World.blockTypes[BlockType.Type.AIR]);
+        block.SetBlockType(blockType);
         RedrawChunk(World.chunkSize);
 
         if (blockPosition.x == 0) RedrawNeighbourChunk(new Vector3(-16, 0, 0));

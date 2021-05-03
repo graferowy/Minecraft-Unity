@@ -242,13 +242,23 @@ public class World : MonoBehaviour
             };
     }
 
+    public void BuildBlock(string chunkName, Vector3 blockPosition, BlockType.Type blockType)
+    {
+        Chunk chunk;
+
+        if (World.chunks.TryGetValue(chunkName, out chunk))
+        {
+            chunk.ChangeBlockType(blockPosition, World.blockTypes[blockType]);
+        }
+    }
+
     public void DestroyBlock(string chunkName, Vector3 blockPosition)
     {
         Chunk chunk;
         
         if (World.chunks.TryGetValue(chunkName, out chunk))
         {
-            chunk.DestroyBlock(blockPosition);
+            chunk.ChangeBlockType(blockPosition, World.blockTypes[BlockType.Type.AIR]);
         }
     }
 
